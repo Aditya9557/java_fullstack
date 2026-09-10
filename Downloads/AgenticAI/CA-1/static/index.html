@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Packing List Agent | CA-1 AI Travel Assistant</title>
+  <meta name="description" content="A Plan-and-Act AI Agent for dynamic travel packing based on destination weather, duration, and purpose." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation / Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-badge">
+          <span class="logo-icon">🧳</span>
+          <div class="logo-text">
+            <h1>Smart Packing Agent</h1>
+            <span class="sub-title">CSE476 CA-1 Project &bull; Plan-and-Act Travel Assistant</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span class="status-text">Groq LLM Active</span>
+        </div>
+        <button id="resetBtn" class="btn btn-secondary" title="Reset Session Memory & Packing List">
+          <span class="btn-icon">🔄</span> Reset Session
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Split Grid -->
+    <main class="main-grid">
+      <!-- Left Column: Chat and Agent Plan-Act Trace -->
+      <section class="agent-panel card">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="icon">💬</span>
+            <h2>Agent Conversation & Execution Traces</h2>
+          </div>
+          <span class="badge badge-accent">Plan-Act Loop</span>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div id="chatHistory" class="chat-history">
+          <!-- Initial Welcome Message -->
+          <div class="message-bubble agent-message">
+            <div class="avatar">🤖</div>
+            <div class="message-content">
+              <div class="sender-name">PackBot Agent</div>
+              <p>Hello! I am your <strong>Plan-and-Act Smart Packing Agent</strong>. Tell me where you are going, for how many days, and the purpose of your trip.</p>
+              <p class="hint">I will look up the forecast using my weather tools, reason over your requirements, and prepare your customized packing list!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggested Prompt Chips -->
+        <div class="prompt-chips">
+          <span class="chips-label">Try an example:</span>
+          <button class="chip" data-prompt="I am going to Shimla for a 3-day business conference. What should I pack?">🏔️ Shimla 3-Day Conference</button>
+          <button class="chip" data-prompt="What weather gear do I have packed so far? Did you include an umbrella?">☔ Check Rain Gear in Memory</button>
+          <button class="chip" data-prompt="I am extending the trip by 2 days to go mountain trekking. What extra items should I pack?">🥾 Add Mountain Trekking</button>
+          <button class="chip" data-prompt="I'm planning a 4-day weekend beach vacation to Goa. What should I pack?">🏖️ Goa Beach Trip</button>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="chatForm" class="chat-form">
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="userInput" 
+              placeholder="e.g., I'm visiting London next week for 5 days of sightseeing..." 
+              autocomplete="off" 
+              required 
+            />
+            <button type="submit" id="sendBtn" class="btn btn-primary">
+              <span>Send</span>
+              <span class="send-arrow">➔</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Dynamic Travel Dashboard & Packing Board -->
+      <aside class="dashboard-panel">
+        <!-- Live Destination Weather Card -->
+        <div class="card weather-card" id="weatherWidget">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="icon">🌤️</span>
+              <h3>Destination Climate Forecast</h3>
+            </div>
+            <span class="badge" id="weatherStatusBadge">No Destination Set</span>
+          </div>
+          <div class="weather-body" id="weatherContent">
+            <div class="weather-empty">
+              <p>Share your destination with the agent to load real-time weather and temperature insights.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Categorized Packing List Card -->
+        <div class="card packing-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="icon">📋</span>
+              <h3>Current Packing List</h3>
+            </div>
+            <div class="pack-stats">
+              <span class="badge badge-success" id="totalItemsBadge">0 Items</span>
+            </div>
+          </div>
+
+          <!-- Category Tabs & Checklist Container -->
+          <div id="packingListContainer" class="packing-list-container">
+            <div class="empty-state">
+              <div class="empty-icon">🎒</div>
+              <p>Your packing list is empty.</p>
+              <span>Ask the agent to plan your trip to see items categorized automatically!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session Memory Inspector Card -->
+        <div class="card memory-card">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="icon">🧠</span>
+              <h3>Active Session Memory</h3>
+            </div>
+            <span class="badge badge-info" id="turnsBadge">Turn 0</span>
+          </div>
+          <div class="memory-body">
+            <pre id="memorySummary">Initializing session memory...</pre>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

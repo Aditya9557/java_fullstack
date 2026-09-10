@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusQuery - AI-Powered College Query Management & Routing System</title>
+  
+  <!-- Modern Typography & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">
+        <i class="fas fa-university"></i>
+      </div>
+      <div class="sidebar-brand">
+        <h1>CampusQuery</h1>
+        <p>AI Query Routing</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Student Portal</div>
+      <a class="nav-item active" data-view="view-student-dashboard" id="nav-dashboard">
+        <i class="fas fa-chart-pie"></i>
+        <span>My Queries</span>
+        <span class="nav-badge" id="badge-my-queries">0</span>
+      </a>
+      <a class="nav-item" data-view="view-raise-query" id="nav-raise-query">
+        <i class="fas fa-paper-plane"></i>
+        <span>Raise a Query</span>
+      </a>
+
+      <div class="nav-section-title" id="section-dept-title">Department Desk</div>
+      <a class="nav-item" data-view="view-department-queue" id="nav-dept-queue">
+        <i class="fas fa-inbox"></i>
+        <span>Department Queue</span>
+        <span class="nav-badge" id="badge-dept-queries">0</span>
+      </a>
+
+      <div class="nav-section-title" id="section-admin-title">Institutional Admin</div>
+      <a class="nav-item" data-view="view-admin-analytics" id="nav-analytics">
+        <i class="fas fa-chart-line"></i>
+        <span>Analytics & KPIs</span>
+      </a>
+      <a class="nav-item" data-view="view-admin-rules" id="nav-rules">
+        <i class="fas fa-sliders-h"></i>
+        <span>Routing Rules</span>
+      </a>
+      <a class="nav-item" data-view="view-admin-categories" id="nav-categories">
+        <i class="fas fa-folder-tree"></i>
+        <span>Categories & Tree</span>
+      </a>
+
+      <div class="nav-section-title">System & Verification</div>
+      <a class="nav-item" data-view="view-acceptance-tests" id="nav-tests">
+        <i class="fas fa-vial-circle-check"></i>
+        <span>Acceptance Tests (7/7)</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-avatar" id="current-user-avatar">👨‍🎓</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="current-user-name">Aditya Chaubey</div>
+        <div class="sidebar-user-role" id="current-user-role-label">Student (21BCSE1024)</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View Area -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <div class="header-title-badge">
+          <span id="header-view-title">Student Dashboard</span>
+          <span class="role-badge-pill pill-student" id="header-role-badge">STUDENT</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- One-Click Demo Role Switcher -->
+        <div class="role-switcher-container">
+          <span class="role-switcher-label"><i class="fas fa-user-circle"></i> Switch Persona:</span>
+          <select class="role-select" id="role-select-box" onchange="handleRoleSwitch(this.value)">
+            <!-- Populated dynamically via JS -->
+          </select>
+        </div>
+
+        <!-- Notification Center -->
+        <div style="position: relative;">
+          <button class="notif-button" id="notif-bell-btn" onclick="toggleNotifDropdown()" title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notif-counter" id="notif-unread-count" style="display:none;">0</span>
+          </button>
+          
+          <!-- Dropdown container -->
+          <div id="notif-dropdown" style="display:none; position:absolute; right:0; top:48px; width:340px; background:#fff; border-radius:12px; box-shadow:var(--shadow-xl); border:1px solid var(--border-color); z-index:100; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+              <span style="font-weight:700; font-size:14px;">Notifications</span>
+              <button onclick="markAllNotificationsRead()" class="btn btn-sm btn-secondary" style="font-size:11px; padding:3px 8px;">Mark All Read</button>
+            </div>
+            <div id="notif-list-container" style="max-height:360px; overflow-y:auto;">
+              <!-- Notifications populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Viewport -->
+    <main class="content-viewport">
+      
+      <!-- ================================================================
+           VIEW 1: Student Dashboard
+           ================================================================ -->
+      <section id="view-student-dashboard" class="view-section active">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Student Query Center</h2>
+            <p class="page-subtitle">Track your submitted queries, verify resolutions, and communicate with university departments.</p>
+          </div>
+          <button class="btn btn-primary" onclick="navigateTo('view-raise-query')">
+            <i class="fas fa-plus-circle"></i> Raise a Query
+          </button>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-blue"><i class="fas fa-ticket-alt"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-total-queries">0</span>
+              <span class="kpi-label">Total Queries</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-amber"><i class="fas fa-spinner"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-open-queries">0</span>
+              <span class="kpi-label">In Progress</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-green"><i class="fas fa-check-circle"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-resolved-queries">0</span>
+              <span class="kpi-label">Resolved / Closed</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-red"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="kpi-high-prio-queries">0</span>
+              <span class="kpi-label">High Priority</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Queries Table -->
+        <div class="card-container">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-list"></i> My Submitted Queries</div>
+            <div class="table-controls">
+              <input type="text" id="filter-my-search" class="search-input" placeholder="Search ticket or keyword..." oninput="renderStudentQueries()">
+              <select id="filter-my-status" class="select-filter" onchange="renderStudentQueries()">
+                <option value="">All Statuses</option>
+                <option value="ROUTED">Routed</option>
+                <option value="ASSIGNED">Assigned</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="WAITING_FOR_STUDENT">Waiting for Student</option>
+                <option value="RESOLVED">Resolved</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </div>
+          </div>
+          <table class="custom-table" id="table-my-queries">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Query Summary</th>
+                <th>Category</th>
+                <th>Department</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-my-queries">
+              <!-- Rendered via student.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 2: Raise Query (Conversational AI Workflow)
+           ================================================================ -->
+      <section id="view-raise-query" class="view-section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Submit a New Query</h2>
+            <p class="page-subtitle">Describe your problem naturally. The AI classification engine will detect the category, subcategory, priority, and route it to the exact university department.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="navigateTo('view-student-dashboard')">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+          </button>
+        </div>
+
+        <!-- Sample Quick-Fill Chips -->
+        <div style="margin-bottom: 12px;">
+          <span style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Try Sample Student Queries:</span>
+        </div>
+        <div class="prompt-chips-container">
+          <div class="prompt-chip" onclick="fillSamplePrompt('My exams for DBMS and Operating Systems are scheduled at the same time.')">
+            📅 Exam Clash (DBMS & OS)
+          </div>
+          <div class="prompt-chip" onclick="fillSamplePrompt('My attendance in CSE320 is showing 62% but I attended most of the classes.')">
+            📊 Attendance Correction (CSE320)
+          </div>
+          <div class="prompt-chip" onclick="fillSamplePrompt('I want to register for the upcoming Infosys placement drive but portal shows incomplete profile.')">
+            💼 Placement Registration (Infosys)
+          </div>
+          <div class="prompt-chip" onclick="fillSamplePrompt('The ceiling fan in my hostel room B-304 is stopped and socket is sparking.')">
+            🏢 Hostel Maintenance (Sparking Fan)
+          </div>
+          <div class="prompt-chip" onclick="fillSamplePrompt('I have medical leave certificate from campus doctor but attendance is not updated.')">
+            🩺 Medical Leave Submission
+          </div>
+          <div class="prompt-chip" onclick="fillSamplePrompt('I am facing some problems with schedules and timing.')">
+            ❓ Ambiguous Query Test
+          </div>
+        </div>
+
+        <div class="raise-query-grid">
+          <!-- Left: Input Form -->
+          <div class="card-container" style="padding: 24px;">
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">Query Title (Optional summary)</label>
+              <input type="text" id="input-query-title" class="form-input" placeholder="e.g. Overlapping exam schedules for 4th semester">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">Describe Your Problem in Plain English <span style="color:#ef4444;">*</span></label>
+              <textarea id="input-query-text" class="query-textarea" placeholder="Type your issue naturally. E.g. 'I was present in all classes of Dr. Rao but marked absent in portal...'"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label class="form-label">Attach Supporting Document (Optional screenshot / PDF)</label>
+              <input type="file" id="input-query-file" class="form-input" style="padding: 7px;">
+              <span style="font-size:11px; color:var(--text-muted);">Accepted: PDF, PNG, JPG (e.g. medical slip, admit card, fee challan)</span>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+              <button class="btn btn-secondary" type="button" onclick="triggerAIPreview()">
+                <i class="fas fa-brain"></i> Analyze with AI
+              </button>
+              <button class="btn btn-primary" type="button" id="btn-submit-query" onclick="submitNewTicket()" disabled>
+                <i class="fas fa-check-circle"></i> Create & Route Query
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Live AI Classification Preview -->
+          <div>
+            <div class="ai-preview-card" id="ai-preview-container">
+              <div class="ai-preview-header">
+                <span class="ai-pill-tag"><i class="fas fa-robot"></i> AI Classification Engine</span>
+                <span id="ai-status-indicator" style="font-size:12px; font-weight:600; color:var(--text-muted);">Awaiting query text...</span>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:12px; font-weight:700; color:var(--text-muted);">AI CONFIDENCE LEVEL</span>
+                  <span style="font-size:14px; font-weight:800;" id="ai-confidence-score">0%</span>
+                </div>
+                <div class="ai-confidence-bar">
+                  <div class="ai-confidence-fill" id="ai-confidence-bar-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <!-- Detected Entities -->
+              <div class="ai-detected-grid">
+                <div class="detected-item">
+                  <label>Detected Category</label>
+                  <span id="ai-preview-category">—</span>
+                </div>
+                <div class="detected-item">
+                  <label>Detected Subcategory</label>
+                  <span id="ai-preview-subcategory">—</span>
+                </div>
+                <div class="detected-item">
+                  <label>Target Department</label>
+                  <span id="ai-preview-department" style="color:var(--primary);">—</span>
+                </div>
+                <div class="detected-item">
+                  <label>Assigned Priority</label>
+                  <span id="ai-preview-priority">—</span>
+                </div>
+              </div>
+
+              <!-- Reasoning Box -->
+              <div class="ai-reason-box" id="ai-preview-reason">
+                Type your query above or click any sample prompt to see real-time AI classification and routing prediction.
+              </div>
+
+              <!-- Clarification / Confirmation Block -->
+              <div id="ai-confirmation-box" style="display:none;">
+                <!-- Populated dynamically if confidence requires confirmation -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 3: Ticket Detail & State Machine Chat
+           ================================================================ -->
+      <section id="view-ticket-detail" class="view-section">
+        <div class="page-header" style="margin-bottom: 16px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <button class="btn btn-secondary btn-sm" onclick="handleDetailBack()"><i class="fas fa-arrow-left"></i> Back</button>
+              <h2 class="page-title" id="detail-ticket-number" style="font-size:22px;">CQ-1024</h2>
+              <span class="badge badge-resolved" id="detail-ticket-status">RESOLVED</span>
+              <span class="badge badge-prio-high" id="detail-ticket-priority">HIGH</span>
+            </div>
+            <h3 id="detail-ticket-title" style="font-size:16px; font-weight:600; color:#334155; margin-top:6px;">Loading title...</h3>
+          </div>
+
+          <div style="display:flex; gap:10px;" id="detail-action-buttons-container">
+            <!-- Dynamic action buttons (Confirm Resolution, Reopen, Escalate, Assign, etc.) -->
+          </div>
+        </div>
+
+        <!-- State Stepper -->
+        <div class="stepper-container">
+          <div class="stepper-track" id="ticket-stepper-track">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <div class="ticket-detail-grid">
+          <!-- Left Column: Live Chat & Messages -->
+          <div class="chat-container">
+            <div class="chat-header">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-comments" style="color:var(--primary);"></i>
+                <span style="font-weight:700; font-size:14px;">Query Discussion & Audit Stream</span>
+              </div>
+              <div id="chat-internal-toggle" style="display:none;">
+                <label style="font-size:12px; font-weight:600; cursor:pointer;">
+                  <input type="checkbox" id="check-internal-note"> Internal Note (Staff Only)
+                </label>
+              </div>
+            </div>
+
+            <div class="chat-messages-area" id="chat-messages-list">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <div class="chat-input-bar">
+              <div class="chat-input-row">
+                <input type="text" id="chat-input-text" class="chat-text-input" placeholder="Type a message or response..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+                <button class="btn btn-primary" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Metadata, Student Info & State Timeline -->
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <!-- Student & Department Info Card -->
+            <div class="card-container" style="padding: 18px;">
+              <div style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px;">Query Details</div>
+              
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                <div>
+                  <span style="color:var(--text-muted);">Student:</span>
+                  <strong id="detail-student-name" style="margin-left:6px;">—</strong>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted);">Roll Number:</span>
+                  <span id="detail-student-roll" style="margin-left:6px; font-weight:600;">—</span>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted);">Department:</span>
+                  <span id="detail-dept-name" style="margin-left:6px; font-weight:700; color:var(--primary);">—</span>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted);">Assigned Officer:</span>
+                  <span id="detail-officer-name" style="margin-left:6px; font-weight:600;">Unassigned</span>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted);">Category / Issue:</span>
+                  <span id="detail-cat-sub" style="margin-left:6px; font-weight:600;">—</span>
+                </div>
+                <div>
+                  <span style="color:var(--text-muted);">SLA Window:</span>
+                  <span id="detail-sla-window" style="margin-left:6px; font-weight:600;">24 Hours</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Classification Audit Card -->
+            <div class="card-container" style="padding: 18px; border-left: 4px solid var(--primary);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary);"><i class="fas fa-brain"></i> AI Classification Audit</span>
+                <span id="detail-ai-confidence-pill" class="badge badge-classified">96% Conf</span>
+              </div>
+              <div id="detail-ai-reason" style="font-size:12px; color:#475569; line-height:1.4;">
+                Loading AI reasoning...
+              </div>
+              <div id="detail-override-info" style="margin-top:10px; font-size:11px; color:#b91c1c; display:none;">
+                <i class="fas fa-exclamation-circle"></i> Classification was manually overridden by staff.
+              </div>
+            </div>
+
+            <!-- Lifecycle State History Audit Trail -->
+            <div class="card-container" style="padding: 18px; max-height:360px; overflow-y:auto;">
+              <div style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:14px;">State Transition History</div>
+              <div class="history-timeline" id="detail-history-timeline">
+                <!-- Populated via app.js -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 4: Department Queue
+           ================================================================ -->
+      <section id="view-department-queue" class="view-section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title" id="dept-portal-title">Department Work Queue</h2>
+            <p class="page-subtitle">Manage queries routed to your department, review evidence, assign officers, and resolve complaints.</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <select id="dept-filter-selector" class="select-filter" onchange="switchDepartmentFilter(this.value)">
+              <!-- Populated with all departments -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Dept KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-blue"><i class="fas fa-inbox"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="dept-kpi-total">0</span>
+              <span class="kpi-label">Active Queue</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-red"><i class="fas fa-fire"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="dept-kpi-high">0</span>
+              <span class="kpi-label">High Priority</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-amber"><i class="fas fa-user-clock"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="dept-kpi-waiting">0</span>
+              <span class="kpi-label">Waiting for Student</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-green"><i class="fas fa-shield-check"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="dept-kpi-resolved">0</span>
+              <span class="kpi-label">Resolved</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Department Queue Table -->
+        <div class="card-container">
+          <div class="card-header">
+            <div class="card-title"><i class="fas fa-clipboard-list"></i> Department Tickets</div>
+            <div class="table-controls">
+              <input type="text" id="dept-search-input" class="search-input" placeholder="Search ticket..." oninput="renderDeptTickets()">
+              <select id="dept-status-filter" class="select-filter" onchange="renderDeptTickets()">
+                <option value="">All Statuses</option>
+                <option value="ROUTED">New / Unassigned</option>
+                <option value="ASSIGNED">Assigned</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="WAITING_FOR_STUDENT">Waiting for Student</option>
+                <option value="RESOLVED">Resolved</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+            </div>
+          </div>
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Subject</th>
+                <th>Student</th>
+                <th>Subcategory</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned Officer</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-dept-tickets">
+              <!-- Rendered via department.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 5: Admin Analytics & Institutional Dashboard
+           ================================================================ -->
+      <section id="view-admin-analytics" class="view-section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Institutional Analytics & Performance</h2>
+            <p class="page-subtitle">Real-time metrics on student grievance trends, AI accuracy, resolution turnaround, and department load.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="loadAdminAnalytics()"><i class="fas fa-sync"></i> Refresh Data</button>
+        </div>
+
+        <!-- Master KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-blue"><i class="fas fa-layer-group"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="admin-total-tickets">0</span>
+              <span class="kpi-label">Total Queries Logged</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-green"><i class="fas fa-percentage"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="admin-resolution-rate">0%</span>
+              <span class="kpi-label">Resolution Rate</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-purple"><i class="fas fa-microchip"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="admin-ai-accuracy">0%</span>
+              <span class="kpi-label">AI Classification Accuracy</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-amber"><i class="fas fa-clock"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-value" id="admin-avg-time">14.2h</span>
+              <span class="kpi-label">Avg Resolution Turnaround</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-bottom: 24px;">
+          <!-- Category Breakdown Chart -->
+          <div class="card-container" style="padding: 20px;">
+            <div class="card-title" style="margin-bottom:16px;"><i class="fas fa-chart-pie"></i> Queries by Category</div>
+            <div id="chart-categories-container" style="height:260px; display:flex; align-items:flex-end; gap:16px; padding:20px 10px;">
+              <!-- SVG / Bars generated by charts.js -->
+            </div>
+          </div>
+
+          <!-- Department Load Chart -->
+          <div class="card-container" style="padding: 20px;">
+            <div class="card-title" style="margin-bottom:16px;"><i class="fas fa-building"></i> Queries by Department</div>
+            <div id="chart-departments-container" style="height:260px; display:flex; flex-direction:column; justify-content:space-around; padding:10px 0;">
+              <!-- Bars generated by charts.js -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 6: Configurable Routing Rules (Super Admin)
+           ================================================================ -->
+      <section id="view-admin-rules" class="view-section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Configurable Routing Rules</h2>
+            <p class="page-subtitle">Configure how queries are automatically mapped from Category + Subcategory to target departments, priorities, and SLAs.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddRuleModal()"><i class="fas fa-plus"></i> Add Routing Rule</button>
+        </div>
+
+        <div class="card-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Rule ID</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Target Department</th>
+                <th>Default Priority</th>
+                <th>SLA (Hours)</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-routing-rules">
+              <!-- Rendered via admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 7: Category & Subcategory Tree Manager
+           ================================================================ -->
+      <section id="view-admin-categories" class="view-section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Categories & Subcategories Hierarchy</h2>
+            <p class="page-subtitle">Manage institutional taxonomy for academic, examination, placement, and hostel services.</p>
+          </div>
+        </div>
+
+        <div id="categories-tree-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+          <!-- Rendered via admin.js -->
+        </div>
+      </section>
+
+
+      <!-- ================================================================
+           VIEW 8: Acceptance Test Suite Runner (7/7 Core Tests)
+           ================================================================ -->
+      <section id="view-acceptance-tests" class="view-section">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Automated Acceptance Test Suite</h2>
+            <p class="page-subtitle">Interactive test runner executing all 7 required acceptance tests directly in-browser and through Python.</p>
+          </div>
+          <button class="btn btn-success" onclick="runAllBrowserTests()"><i class="fas fa-play"></i> Run All 7 Acceptance Tests</button>
+        </div>
+
+        <div class="card-container" style="padding: 24px;">
+          <div style="display:flex; flex-direction:column; gap:16px;" id="acceptance-tests-list">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     MODALS
+     ========================================================================== -->
+
+<!-- Modal: Resolve Ticket -->
+<div class="modal-backdrop" id="modal-resolve-ticket">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title">Resolve Ticket</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-resolve-ticket')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-muted);">Please provide resolution details for the student.</p>
+      <div class="form-group">
+        <label class="form-label">Resolution Notes / Action Taken <span style="color:#ef4444;">*</span></label>
+        <textarea id="resolve-modal-notes" class="form-textarea" rows="4" placeholder="e.g. Operating Systems examination has been rescheduled to Dec 16th Slot 1. Updated admit card is now live on ERP."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-resolve-ticket')">Cancel</button>
+      <button class="btn btn-success" onclick="submitResolveTicket()"><i class="fas fa-check"></i> Mark Resolved</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Assign Officer -->
+<div class="modal-backdrop" id="modal-assign-ticket">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title">Assign Ticket to Officer</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-assign-ticket')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Select Department Officer</label>
+        <select id="assign-officer-select" class="form-select">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-assign-ticket')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAssignTicket()">Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add / Edit Routing Rule -->
+<div class="modal-backdrop" id="modal-routing-rule">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title" id="rule-modal-title">Add Routing Rule</h3>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-routing-rule')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rule-edit-id">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="rule-category-select" class="form-select" onchange="populateRuleSubcategories(this.value)">
+          <!-- Populated via JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subcategory (Optional - applies to all if blank)</label>
+        <select id="rule-subcategory-select" class="form-select">
+          <!-- Populated via JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Target Department</label>
+        <select id="rule-department-select" class="form-select">
+          <!-- Populated via JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Default Priority</label>
+        <select id="rule-priority-select" class="form-select">
+          <option value="HIGH">HIGH</option>
+          <option value="MEDIUM" selected>MEDIUM</option>
+          <option value="LOW">LOW</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">SLA Window (Hours)</label>
+        <input type="number" id="rule-sla-input" class="form-input" value="24" min="1" max="168">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-routing-rule')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitSaveRoutingRule()">Save Rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Scripts -->
+<script src="/static/js/app.js"></script>
+</body>
+</html>

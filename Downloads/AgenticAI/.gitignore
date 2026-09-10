@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.ipynb_checkpoints/
+
+# Environments & Virtual Environments
+.env
+*.env
+.venv/
+venv/
+ENV/
+env/
+my_venv/
+
+# Database files
+*.db
+*.sqlite3
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Project archives & external submodule/course repo
+CA-1.zip
+cse476-agentic-ai/
